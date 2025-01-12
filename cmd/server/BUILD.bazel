@@ -5,7 +5,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "github.com/jimmyl02/bazel-playground-connectrpc/cmd/server",
     visibility = ["//visibility:private"],
-    deps = ["//proto/testproto"],
+    deps = ["//proto/testproto:testproto_go_proto"],
 )
 
 go_binary(
