@@ -1,6 +1,8 @@
 # bazel-playground-connectrpc
 
-this is a little playground to better learn how to work with bazel, protobuf, and connectrpc. this is based off of the [bazel playground for grpc](https://github.com/jimmyl02/bazel-playground)
+this is a little playground to better learn how to work with bazel, protobuf, and connectrpc. what this repository presents is a completely working bazel environment which has fully automatically generated connectrpc definitions using the protoc plugin. online documentation for protoc plugins is extremely sparse so I hope this is helpful to others!
+
+this is based off of the [bazel playground for grpc](https://github.com/jimmyl02/bazel-playground).
 
 ## setup
 
