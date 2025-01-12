@@ -1,5 +1,18 @@
+load("@rules_go//proto:compiler.bzl", "go_proto_compiler")
 load("@rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+
+go_proto_compiler(
+    name = "connect_go_proto_compiler",
+    options = [
+        "paths=source_relative",
+        "package_suffix",
+    ],
+    plugin = "@com_connectrpc_connect//cmd/protoc-gen-connect-go:protoc-gen-connect-go",
+    suffix = ".connect.go",
+    visibility = ["//visibility:public"],
+    deps = ["@com_connectrpc_connect//:go_default_library"],
+)
 
 proto_library(
     name = "testproto_proto",
@@ -13,7 +26,8 @@ proto_library(
 
 go_proto_library(
     name = "testproto_go_proto",
-    compilers = ["@rules_go//proto:go_grpc"],
+    compilers = [":connect_go_proto_compiler"],
+    # compilers = ["@rules_go//proto:go_grpc"],
     importpath = "github.com/jimmyl02/bazel-playground-connectrpc/proto/testproto",
     proto = ":testproto_proto",
     visibility = ["//visibility:public"],
