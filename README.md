@@ -63,6 +63,7 @@ go mod init github.com/jimmyl02/bazel-playground-connectrpc
 bazelisk run @rules_go//go -- get -u github.com/moznion/go-optional
 bazelisk run @rules_go//go -- mod tidy -e
 bazelisk run //:gazelle
+bazelisk mod tidy
 ```
 
 after this, it is required the manually specify the package in `use_repo` of the root `MODULE.bazel`
@@ -123,11 +124,9 @@ now let's focus on getting `protoc-gen-connect-go` plugin to work with bazel / g
 
 for this, we need to change gazelle's `go_grpc_compiler` to use the `protoc-gen-connect-go` plugin from buf.
 
-first, we need to install the binary `go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest`
+the quick summary of how to use these plugins with bazel is through definitions of `go_proto_compiler`. the language is pretty confusing because here is references a "compiler" while other places define this as a "plugin".
 
-#### using protobuf types within golang
-
-take a look at the `BUILD.bazel` of the types directory; notice that we export a `go_library`, this means we can just directly use it within the go code!
+we need to define a compiler / plugin for `protoc-gen-connect-go` which is then invoked. however, one tricky part is that we also need to run `@rules_go//proto:go_proto` which is a predefined compiler rule because it seems like once there is no output from the compiled protobuf types without explicitly defining it as a plugin. for exact details about how to di this, take a look at the `proto/testproto/BUILD.bazel` file.
 
 ## debugging
 

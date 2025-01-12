@@ -26,7 +26,10 @@ proto_library(
 
 go_proto_library(
     name = "testproto_go_proto",
-    compilers = [":connect_go_proto_compiler"],
+    compilers = [
+        "@rules_go//proto:go_proto",
+        ":connect_go_proto_compiler",
+    ],
     # compilers = ["@rules_go//proto:go_grpc"],
     importpath = "github.com/jimmyl02/bazel-playground-connectrpc/proto/testproto",
     proto = ":testproto_proto",
