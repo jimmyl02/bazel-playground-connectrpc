@@ -18,7 +18,7 @@ optionally, we can define a strict bazel version to use with `.bazelliskrc` by s
 
 setup MODULE.bazel with [docs](https://github.com/bazel-contrib/rules_go/blob/master/docs/go/core/bzlmod.md)
 
-make sure we carefuully setup BUILD.bazel and gazelle with the correct `go_prefix`!
+make sure we carefuully setup BUILD.bazel and gazelle with the correct `go_prefix`! for the instantiation, we just need to add a dependency in our `MODULE.bazel` then instantiate it in our root `BUILD.bazel`. exact documentation can be found [here](https://github.com/bazel-contrib/rules_go/blob/master/docs/go/core/bzlmod.md) and it's pretty accurate.
 
 ```
 # gazelle:prefix github.com/jimmyl02/bazel-playground-connectrpc
@@ -27,7 +27,7 @@ make sure we carefuully setup BUILD.bazel and gazelle with the correct `go_prefi
 we can then run gazelle with
 
 ```
-bazel run //:gazelle
+bazelisk run //:gazelle
 ```
 
 #### setup vscode with bazel
@@ -56,6 +56,8 @@ edit the workspace preferences
 
 #### import a new dependency with gazelle
 
+##### external dependency
+
 when adding an external dependency, it is now recommended to use a go.mod which is parsed by the `go_deps` bazel extension. this means when adding a dependency, it should be through the standard `go get -u <package>` command.
 
 ```
@@ -66,26 +68,28 @@ bazelisk run //:gazelle
 bazelisk mod tidy
 ```
 
-after this, it is required the manually specify the package in `use_repo` of the root `MODULE.bazel`
+it is required that the explicit dependencies are specified in `use_repo` of the root `MODULE.bazel`. the series go `go mod tidy`, then running gazelle and `bazel mod tidy` should be capable of automatically updating the `use_repo` list of dependencies. this allows us to just maintain the source of truth in one location which is `go.mod`. this has additional benefits in letting us use standard tooling go with this repository if we ever want to.
 
-add an internal dependency
+##### internal dependency
+
+adding an internal dependency should be automatically handled by just calling the important in golang then running gazelle.
 
 ```
 # after adding the dependency in code, there is a "metadata missing" error; anywhere run:
-gazelle
+bazelisk run //:gazelle
 ```
 
 #### run the cmd
 
 ```
-bazel run //cmd/testcmd
+bazel run //cmd/server
 ```
 
 #### build and run the cmd
 
 ```
-bazel build //cmd/testcmd
-./bazel-bin/cmd/testcmd/testcmd_/testcmd
+bazel build //cmd/testserver
+./bazel-bin/cmd/server/server_/server
 ```
 
 ## connectrpc
@@ -101,13 +105,11 @@ in general, it seems we want to do the following:
 
 ##### protoc-gen-go
 
-first we need to update the gazelle goo grpc compilers by adding the directive `# gazelle:go_grpc_compilers @rules_go//proto:go_grpc` in our `BUILD.bazel`. this controls the `compilers` property of the `go_proto_library` and is the first step in getting it to output correctly with bazelmod.
-
-write the proto file into a proto directory then run gazelle to generate the `BUILD.bazel`
+the first step is to get protobuf working at all. this should be done by writing the proto file into a proto directory then run gazelle to generate the `BUILD.bazel`
 
 notice that running `bazel build //...` fails because we are missing `@@com_google_protobuf`
 
-we can add it to our MODULE.bazel by adding the dependency
+we can fix this by adding add it to our MODULE.bazel thus adding the dependency
 
 ```
 bazel_dep(name = "protobuf", version = "29.3", repo_name = "com_google_protobuf")
@@ -128,8 +130,16 @@ the quick summary of how to use these plugins with bazel is through definitions 
 
 we need to define a compiler / plugin for `protoc-gen-connect-go` which is then invoked. however, one tricky part is that we also need to run `@rules_go//proto:go_proto` which is a predefined compiler rule because it seems like once there is no output from the compiled protobuf types without explicitly defining it as a plugin. for exact details about how to di this, take a look at the `proto/testproto/BUILD.bazel` file.
 
+we find that we also can't just invoke the plugin as it generates in a subfolder with additional options. the buf team [recently added an option to generate in the same package](https://github.com/connectrpc/connect-go/discussions/310#discussioncomment-11765339) which means that by calling the plugin with the `package_suffix` we can get a super nicely working protobuf + connectrpc generation.
+
+the awesome part of bazel is that it's a true monorepo! this means we can define our compiler / plugin in our root `BUILD.bazel` and reference it in the proto `BUILD.bazel`. you can find the final definition in the root `BUILD.bazel` and notice that we can add the gazelle directive `# gazelle:go_grpc_compilers @rules_go//proto:go_proto,//:connect_go_proto_compiler` which properly calls our newly defined compiler after the `go_proto` prefined compiler
+
 ## debugging
 
 #### unexpected end of JSON input
 
 this error occurs when something is wrong with the overall bazel configuration, the best way to debug is to attempt to build something and seeing what is wrong
+
+## conclusion
+
+this playground is always subject to change! but I will try to tag working versions at different stages. it has been a good (and to be honest, time consuming and quite painful) learning experience. I hope this repository is helpful to others who are trying to get started with bazel and especially with things like `protoc` plugins
