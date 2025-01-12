@@ -1,8 +1,8 @@
 load("@gazelle//:def.bzl", "gazelle")
 load("@rules_go//proto:compiler.bzl", "go_proto_compiler")
 
-# gazelle:go_grpc_compilers @rules_go//proto:go_grpc //:connect_go_proto_compiler
-# gazelle:go_proto_compilers @rules_go//proto:go_proto
+## gazelle:go_proto_compilers @rules_go//proto:go_proto # it seems this line is not needed
+# gazelle:go_grpc_compilers @rules_go//proto:go_proto,//:connect_go_proto_compiler
 # gazelle:prefix github.com/jimmyl02/bazel-playground-connectrpc
 gazelle(name = "gazelle")
 
