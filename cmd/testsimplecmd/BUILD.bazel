@@ -1,0 +1,15 @@
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "testsimplecmd_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/jimmyl02/bazel-playground-connectrpc/cmd/testsimplecmd",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_moznion_go_optional//:go-optional"],
+)
+
+go_binary(
+    name = "testsimplecmd",
+    embed = [":testsimplecmd_lib"],
+    visibility = ["//visibility:public"],
+)

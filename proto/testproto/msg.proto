@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package testproto;
+
+message SayHiRequest {
+  string name = 1;
+}
+
+message SayHiResponse {
+  string response = 1;
+}

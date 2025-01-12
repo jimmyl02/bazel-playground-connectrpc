@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package testproto;
+
+message SayByeRequest {
+  uint32 bye = 1;
+}
