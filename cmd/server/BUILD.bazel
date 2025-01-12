@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//proto/testproto:testproto_go_proto",
-        "@com_connectrpc_connect//:go_default_library",
+        "@com_connectrpc_connect//:connect",
     ],
 )
 
